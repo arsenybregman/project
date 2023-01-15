@@ -1,6 +1,11 @@
 import pygame
 #import pygame as pq
 import sys
+from log import load_image
+
+import pygame
+#import pygame as pq
+import sys
 import os
 
 
@@ -40,3 +45,7 @@ class StartWin:
                     return #начинаем игру
             pygame.display.flip()
             clock.tick(FPS)
+
+
+
+

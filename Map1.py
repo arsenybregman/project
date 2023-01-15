@@ -2,68 +2,28 @@ import pygame
 #import pygame as pq
 import os
 import sys
-from ObjectsDDD import Player
+from log import Tile
+from Hero import Player
 
 
-PLATFORM_WIDTH = 40
-PLATFORM_HEIGHT = 40
-PLATFORM_COLOR = (9, 15, 33)
+def load_level(filename):
+    filename = 'maps/' + filename
+    with open(filename, 'r') as mapFile:
+        level_map = [line.strip() for line in mapFile]
+    max_width = max(map(len, level_map))
+    return list(map(lambda x: list(x.ljust(max_width, '.')), level_map))
 
 
-class Level1:
-    def __init__(self, screen):
-        self.screen = screen
-        self.image = pygame.Surface((PLATFORM_WIDTH, PLATFORM_HEIGHT))
-        self.image.fill(PLATFORM_COLOR)
-        self.rect = self.image.get_rect()
-
-        entities = pygame.sprite.Group()  # Все объекты
-        platforms = []  # то, во что мы будем врезаться или опираться
-        hero = Player(screen)
-        entities.add(hero)
-
-        self.level = [
-            "-------------------------",
-            "-                       -",
-            "-                       -",
-            "-                       -",
-            "-            --         -",
-            "-                       -",
-            "--                      -",
-            "-                       -",
-            "-                   --- -",
-            "-                       -",
-            "-                       -",
-            "-      ---              -",
-            "-                       -",
-            "-   -----------        -",
-            "-                       -",
-            "-                -      -",
-            "-                   --  -",
-            "-                       -",
-            "-                       -",
-            "-------------------------"]
-
-    def go(self):
-        x = y = 0  # координаты
-        for row in self.level:  # вся строка
-            for col in row:  # каждый символ
-                if col == "-":
-                    # создаем блок, заливаем его цветом и рисеум его
-                    pf = pygame.Surface((PLATFORM_WIDTH, PLATFORM_HEIGHT))
-                    pf.fill(PLATFORM_COLOR)
-                    self.screen.blit(pf, (x, y))
-
-                x += PLATFORM_WIDTH  # блоки платформы ставятся на ширине блоков
-            y += PLATFORM_HEIGHT  # то же самое и с высотой
-            x = 0  # на каждой новой строчке начинаем с нуля
-
-
-class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((PLATFORM_WIDTH, PLATFORM_HEIGHT))
-        self.image.fill(PLATFORM_COLOR)
-        self.rect = self.image.get_rect()(x, y, PLATFORM_WIDTH, PLATFORM_HEIGHT)
-
-
+def generate_level(level):
+    new_player, x, y = None, None, None
+    for y in range(len(level)):
+        for x in range(len(level[y])):
+            if level[y][x] == '.':
+                Tile('empty', x, y)
+            elif level[y][x] == '#':
+                Tile('wall', x, y)
+            elif level[y][x] == '@':
+                Tile('empty', x, y)
+                new_player = Player(x, y)
+                level[y][x] = '.'
+    return new_player, x, y
