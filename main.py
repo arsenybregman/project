@@ -3,7 +3,7 @@ import pygame
 import os
 import sys
 from ObjectsDDD import Player, Gun
-from Start_sc import StartWin#, Level1
+from Start_sc import StartWin
 from Map1 import Level1
 
 

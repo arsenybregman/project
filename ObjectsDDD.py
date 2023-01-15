@@ -1,7 +1,6 @@
 import pygame
 from PIL import Image
 #import pygame as pq
-from Map1 import Level1
 
 
 FPS = 60
