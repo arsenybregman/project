@@ -1,13 +1,16 @@
 import pygame
 from PIL import Image
 #import pygame as pq
+from Map1 import Level1
+
 
 FPS = 60
 
 
-class Player:
+class Player(pygame.sprite.Sprite):
     def __init__(self, screen):
         #инициализация игрока
+        pygame.sprite.Sprite.__init__(self)
         self.screen = screen
         self.image1 = pygame.image.load("image/hero1.png")
         self.image2 = pygame.image.load("image/hero2.png")
@@ -19,6 +22,8 @@ class Player:
         self.rect.centerx = self.screen_rect.centerx
         self.rect.centery = self.screen_rect.centery
         self.rect.bottom = self.screen_rect.bottom
+
+        self.mask = pygame.mask.from_surface(self.image)
 
         self.mright = False
         self.mleft = False
