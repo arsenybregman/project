@@ -30,7 +30,10 @@ hero_group = pygame.sprite.Group()
 
 tile_image = {'wall': load_image('wall.png'),
               'empty': load_image('floor.png')}
-player_image = load_image('hero2.png')
+player_image1 = load_image('hero.png')
+player_image2 = load_image('hero4.png')
+player_image3 = load_image('hero2.png')
+player_image4 = load_image('hero3.png')
 
 tile_width = tile_height = 50
 
@@ -69,7 +72,7 @@ class Tile(Sprite):
 class Player(Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(hero_group)
-        self.image = player_image
+        self.image = player_image1
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
 
@@ -78,17 +81,34 @@ class Player(Sprite):
         self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
                                                tile_height * self.pos[1] + 5)
 
-        def turn_left(self):
-            self.image = self.image4
+    def turn_left(self):
+        self.image = player_image2
 
-        def turn_right(self):
-            self.image = self.image2
+    def turn_right(self):
+        self.image = player_image3
 
-        def turn_up(self):
-            self.image = self.image3
+    def turn_up(self):
+        self.image = player_image4
 
-        def turn_down(self):
-            self.image = self.image1
+    def turn_down(self):
+        self.image = player_image1
+
+
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
 
 
 def terminate():
@@ -130,6 +150,11 @@ def load_level(filename):
     return list(map(lambda x: list(x.ljust(max_width, '.')), level_map))
 
 
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+
+
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -150,15 +175,20 @@ def move(hero, movement):
     if movement == 'up':
         if y > 0 and level_map[y - 1][x] == '.':
             hero.move(x, y - 1)
+            hero.turn_up()
     elif movement == 'down':
         if y < max_y - 1 and level_map[y + 1][x] == '.':
             hero.move(x, y + 1)
+            hero.turn_down()
     elif movement == 'left':
         if x > 0 and level_map[y][x - 1] == '.':
             hero.move(x - 1, y)
+            hero.turn_left()
     elif movement == 'right':
         if x < max_x - 1 and level_map[y][x + 1] == '.':
             hero.move(x + 1, y)
+            hero.turn_right()
+
 
 
 if __name__ == '__main__':
@@ -168,6 +198,9 @@ if __name__ == '__main__':
     start_screen()
     level_map = load_level('map.txt')
     hero, max_x, max_y = generate_level(level_map)
+
+    camera = Camera()
+
     while ranning:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -181,6 +214,12 @@ if __name__ == '__main__':
                     move(hero, 'right')
                 if event.key == pygame.K_a:
                     move(hero, 'left')
+
+            # изменяем ракурс камеры
+            camera.update(hero)
+            # обновляем положение всех спрайтов
+            for sprite in all_sprites:
+                camera.apply(sprite)
         screen.fill(pygame.Color('black'))
         sprite_group.draw(screen)
         hero_group.draw(screen)
