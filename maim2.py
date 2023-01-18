@@ -19,7 +19,8 @@ def load_image(name, color_key=None):
 
 
 pygame.init()
-size = width, height = 840, 510
+width, height = 840, 510
+size = [width, height]
 screen = pygame.display.set_mode(size)
 sprite_group = pygame.sprite.Group()
 hero_group = pygame.sprite.Group()
@@ -95,6 +96,34 @@ class Player(Sprite):
         self.image = player_image1
 
 
+#Камера
+class Camera:
+    def __init__(self, camera_func, width, height):
+        self.camera_func = camera_func
+        self.state = pygame.Rect(0, 0, width, height)
+
+    def update(self, target):
+        self.state = self.camera_func(self.state, target.rect)
+
+    def apply(self, target):
+        return target.rect.move(self.state.topleft)
+
+
+def camera_func(camera, target_rect):
+    l = -target_rect.x + size[0] // 2
+    t = -target_rect.y + size[1] // 2
+
+    w, h = camera.width, camera.height
+
+    l = min(0, l)
+    l = max(-(camera.width - size[0]), l)
+
+    t = max(-(camera.height - size[1]), t)
+    t = min(0, t)
+
+    return pygame.Rect(l, t, w, h)
+
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -146,6 +175,7 @@ def generate_level(level):
                 Tile('empty', x, y)
                 new_player = Player(x, y)
                 level[y][x] = '.'
+
     return new_player, x, y
 
 
@@ -169,6 +199,12 @@ def move(hero, movement):
             hero.turn_right()
 
 
+total_level_width = 20 * 50
+total_level_height = 20 * 50
+
+
+camera = Camera(camera_func, total_level_width, total_level_height)
+
 
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
@@ -185,19 +221,18 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     move(hero, 'up')
-                    for sprite in all_sprites:
-                        sprite.rect.y += 8
                 if event.key == pygame.K_s:
                     move(hero, 'down')
-                    for sprite in all_sprites:
-                        sprite.rect.y -= 8
                 if event.key == pygame.K_d:
                     move(hero, 'right')
                 if event.key == pygame.K_a:
                     move(hero, 'left')
 
         screen.fill(pygame.Color('black'))
-        sprite_group.draw(screen)
+        camera.update(hero)
+        for sprite in sprite_group:
+            screen.blit(sprite.image, camera.apply(sprite))
+        #sprite_group.draw(screen)
         hero_group.draw(screen)
         pygame.display.flip()
     pygame.quit()
