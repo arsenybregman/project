@@ -4,7 +4,7 @@ import os
 #from ObjectsDDD import Player, Gun, Camera
 #from Map1 import load_level, generate_level
 #from log import Tile
-from Hero import Player
+from hero import Player
 
 def load_image(name, color_key=None):
     fullname = os.path.join('image/', name)

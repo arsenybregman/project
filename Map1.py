@@ -3,7 +3,7 @@ import pygame
 import os
 import sys
 from log import Tile
-from Hero import Player
+from hero import Player
 
 
 def load_level(filename):

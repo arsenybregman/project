@@ -2,10 +2,6 @@ import pygame
 import os
 import sys
 
-import pygame
-import os
-import sys
-
 
 def load_image(name, color_key=None):
     fullname = os.path.join('image/', name)
@@ -38,6 +34,11 @@ player_image4 = load_image('hero3.png')
 tile_width = tile_height = 50
 
 
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+
+
 class ScreenFrame(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -54,8 +55,8 @@ class SpriteGroup(pygame.sprite.Sprite):
 
 
 class Sprite(pygame.sprite.Sprite):
-    def __init__(self, group):
-        super().__init__(group)
+    def __init__(self, group, all_sprites):
+        super().__init__(group, all_sprites)
         self.rect = None
 
     def get_event(self, event):
@@ -64,14 +65,14 @@ class Sprite(pygame.sprite.Sprite):
 
 class Tile(Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(sprite_group)
+        super().__init__(sprite_group, all_sprites)
         self.image = tile_image[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
 class Player(Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__(hero_group)
+        super().__init__(hero_group, all_sprites)
         self.image = player_image1
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
@@ -92,23 +93,6 @@ class Player(Sprite):
 
     def turn_down(self):
         self.image = player_image1
-
-
-class Camera:
-    # зададим начальный сдвиг камеры
-    def __init__(self):
-        self.dx = 0
-        self.dy = 0
-
-    # сдвинуть объект obj на смещение камеры
-    def apply(self, obj):
-        obj.rect.x += self.dx
-        obj.rect.y += self.dy
-
-    # позиционировать камеру на объекте target
-    def update(self, target):
-        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
-        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
 
 
 def terminate():
@@ -150,11 +134,6 @@ def load_level(filename):
     return list(map(lambda x: list(x.ljust(max_width, '.')), level_map))
 
 
-all_sprites = pygame.sprite.Group()
-tiles_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
-
-
 def generate_level(level):
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -193,13 +172,11 @@ def move(hero, movement):
 
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
-    player = None
+    hero = None
     ranning = True
     start_screen()
     level_map = load_level('map.txt')
     hero, max_x, max_y = generate_level(level_map)
-
-    camera = Camera()
 
     while ranning:
         for event in pygame.event.get():
@@ -208,18 +185,17 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     move(hero, 'up')
+                    for sprite in all_sprites:
+                        sprite.rect.y += 8
                 if event.key == pygame.K_s:
                     move(hero, 'down')
+                    for sprite in all_sprites:
+                        sprite.rect.y -= 8
                 if event.key == pygame.K_d:
                     move(hero, 'right')
                 if event.key == pygame.K_a:
                     move(hero, 'left')
 
-            # изменяем ракурс камеры
-            camera.update(hero)
-            # обновляем положение всех спрайтов
-            for sprite in all_sprites:
-                camera.apply(sprite)
         screen.fill(pygame.Color('black'))
         sprite_group.draw(screen)
         hero_group.draw(screen)
