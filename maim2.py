@@ -32,12 +32,15 @@ player_image2 = load_image('hero4.png')
 player_image3 = load_image('hero2.png')
 player_image4 = load_image('hero3.png')
 
+monster = load_image("mons.png")
+
 tile_width = tile_height = 50
 
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+rival_group = pygame.sprite.Group()
 
 
 class ScreenFrame(pygame.sprite.Sprite):
@@ -94,6 +97,19 @@ class Player(Sprite):
 
     def turn_down(self):
         self.image = player_image1
+
+
+class Monster(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(rival_group, all_sprites)
+        self.image = monster
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
 
 
 #Камера
@@ -169,6 +185,10 @@ def generate_level(level):
         for x in range(len(level[y])):
             if level[y][x] == '.':
                 Tile('empty', x, y)
+            elif level[y][x] == '!':
+                Tile('empty', x, y)
+                mon = Monster(x, y)
+                level[y][x] = '.'
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '@':
@@ -176,7 +196,7 @@ def generate_level(level):
                 new_player = Player(x, y)
                 level[y][x] = '.'
 
-    return new_player, x, y
+    return new_player, x, y, mon
 
 
 def move(hero, movement):
@@ -212,7 +232,7 @@ if __name__ == '__main__':
     ranning = True
     start_screen()
     level_map = load_level('map.txt')
-    hero, max_x, max_y = generate_level(level_map)
+    hero, max_x, max_y, mon = generate_level(level_map)
 
     while ranning:
         for event in pygame.event.get():
@@ -234,5 +254,6 @@ if __name__ == '__main__':
             screen.blit(sprite.image, camera.apply(sprite))
         #sprite_group.draw(screen)
         hero_group.draw(screen)
+        rival_group.draw(screen)
         pygame.display.flip()
     pygame.quit()
