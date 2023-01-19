@@ -67,13 +67,6 @@ class Sprite(pygame.sprite.Sprite):
         pass
 
 
-class Tile(Sprite):
-    def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(sprite_group, all_sprites)
-        self.image = tile_image[tile_type]
-        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
-
-
 class Player(Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(hero_group, all_sprites)
@@ -97,6 +90,13 @@ class Player(Sprite):
 
     def turn_down(self):
         self.image = player_image1
+
+
+class Tile(Sprite):
+    def __init__(self, tile_type, pos_x, pos_y):
+        super().__init__(sprite_group, all_sprites)
+        self.image = tile_image[tile_type]
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
 class Monster(Sprite):
@@ -226,6 +226,8 @@ total_level_height = 20 * 50
 camera = Camera(camera_func, total_level_width, total_level_height)
 
 
+
+
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
     hero = None
@@ -233,6 +235,8 @@ if __name__ == '__main__':
     start_screen()
     level_map = load_level('map.txt')
     hero, max_x, max_y, mon = generate_level(level_map)
+
+    sprite_group.add(hero)
 
     while ranning:
         for event in pygame.event.get():
@@ -253,7 +257,7 @@ if __name__ == '__main__':
         for sprite in sprite_group:
             screen.blit(sprite.image, camera.apply(sprite))
         #sprite_group.draw(screen)
-        hero_group.draw(screen)
-        rival_group.draw(screen)
+        #hero_group.draw(screen)
+      #  rival_group.draw(screen)
         pygame.display.flip()
     pygame.quit()
