@@ -25,6 +25,7 @@ screen = pygame.display.set_mode(size)
 sprite_group = pygame.sprite.Group()
 hero_group = pygame.sprite.Group()
 
+
 tile_image = {'wall': load_image('wall.png'),
               'empty': load_image('floor.png')}
 player_image1 = load_image('hero.png')
@@ -32,10 +33,17 @@ player_image2 = load_image('hero4.png')
 player_image3 = load_image('hero2.png')
 player_image4 = load_image('hero3.png')
 
+gun_image_up = load_image('gun_up.png')
+gun_image_down = load_image('gun_down.png')
+gun_image_left = load_image('gun_left.png')
+gun_image_right = load_image('gun_right.png')
+bullet_image = load_image('mar.png')
+
 monster1 = load_image("mons1.png")
 monster2 = load_image("mons2.png")
 
 tile_width = tile_height = 50
+
 
 
 all_sprites = pygame.sprite.Group()
@@ -92,6 +100,9 @@ class Player(Sprite):
     def turn_down(self):
         self.image = player_image1
 
+    def get_coords(self):
+        return self.pos
+
 
 class Tile(Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
@@ -130,7 +141,6 @@ class Monster(Sprite):
             mon.m_left()
             self.f = -1 * self.f
         mon.move(x + self.f, y)
-
 
 
 #Камера
@@ -254,6 +264,8 @@ if __name__ == '__main__':
     start_screen()
     level_map = load_level('map.txt')
     hero, max_x, max_y, rival_group = generate_level(level_map)
+
+    pygame.mouse.set_visible(False)
 
     sprite_group.add(hero)
    # sprite_group.add(mon)
