@@ -32,7 +32,8 @@ player_image2 = load_image('hero4.png')
 player_image3 = load_image('hero2.png')
 player_image4 = load_image('hero3.png')
 
-monster = load_image("mons.png")
+monster1 = load_image("mons1.png")
+monster2 = load_image("mons2.png")
 
 tile_width = tile_height = 50
 
@@ -102,14 +103,34 @@ class Tile(Sprite):
 class Monster(Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(rival_group, all_sprites)
-        self.image = monster
+        self.image = monster1
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
+        self.screen_rect = screen.get_rect()
+        self.f = 0.005
 
     def move(self, x, y):
         self.pos = (x, y)
         self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
                                                tile_height * self.pos[1] + 5)
+
+    def m_left(self):
+        self.image = monster2
+
+    def m_right(self):
+        self.image = monster1
+
+    def go(self):
+        x, y = self.pos
+        if self.rect.left == 55:
+            mon.m_right()
+            self.f = -1 * self.f
+
+        if self.rect.right == 400:
+            mon.m_left()
+            self.f = -1 * self.f
+        mon.move(x + self.f, y)
+
 
 
 #Камера
@@ -189,6 +210,7 @@ def generate_level(level):
                 Tile('empty', x, y)
                 mon = Monster(x, y)
                 level[y][x] = '.'
+                rival_group.add(mon)
             elif level[y][x] == '#':
                 Tile('wall', x, y)
             elif level[y][x] == '@':
@@ -196,7 +218,7 @@ def generate_level(level):
                 new_player = Player(x, y)
                 level[y][x] = '.'
 
-    return new_player, x, y, mon
+    return new_player, x, y, rival_group
 
 
 def move(hero, movement):
@@ -225,20 +247,21 @@ total_level_height = 20 * 50
 
 camera = Camera(camera_func, total_level_width, total_level_height)
 
-
-
-
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
     hero = None
     ranning = True
     start_screen()
     level_map = load_level('map.txt')
-    hero, max_x, max_y, mon = generate_level(level_map)
+    hero, max_x, max_y, rival_group = generate_level(level_map)
 
     sprite_group.add(hero)
+   # sprite_group.add(mon)
+    sprite_group.add(rival_group)
 
     while ranning:
+        for mon in rival_group:
+            mon.go()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 ranning = False
