@@ -107,7 +107,7 @@ class Monster(Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
         self.screen_rect = screen.get_rect()
-        self.f = 0.005
+        self.f = 0.0025
 
     def move(self, x, y):
         self.pos = (x, y)
