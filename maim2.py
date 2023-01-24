@@ -25,6 +25,8 @@ screen = pygame.display.set_mode(size)
 sprite_group = pygame.sprite.Group()
 hero_group = pygame.sprite.Group()
 
+door_group = pygame.sprite.Group()
+
 
 tile_image = {'wall': load_image('wall.png'),
               'empty': load_image('floor.png')}
@@ -42,8 +44,9 @@ bullet_image = load_image('mar.png')
 monster1 = load_image("mons1.png")
 monster2 = load_image("mons2.png")
 
-tile_width = tile_height = 50
+door = load_image('door (1).png')
 
+tile_width = tile_height = 50
 
 
 all_sprites = pygame.sprite.Group()
@@ -82,6 +85,8 @@ class Player(Sprite):
         self.image = player_image1
         self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
+
+        self.mask = pygame.mask.from_surface(self.image)
 
     def move(self, x, y):
         self.pos = (x, y)
@@ -156,6 +161,22 @@ class Camera:
         return target.rect.move(self.state.topleft)
 
 
+class Door(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(door_group, all_sprites)
+        self.image = door
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+        self.screen_rect = screen.get_rect()
+
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+
 def camera_func(camera, target_rect):
     l = -target_rect.x + size[0] // 2
     t = -target_rect.y + size[1] // 2
@@ -211,7 +232,7 @@ def load_level(filename):
 
 
 def generate_level(level):
-    new_player, x, y = None, None, None
+    new_player, x, y, new_door = None, None, None, None
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
@@ -227,8 +248,12 @@ def generate_level(level):
                 Tile('empty', x, y)
                 new_player = Player(x, y)
                 level[y][x] = '.'
+            elif level[y][x] == '*':
+                Tile('empty', x, y)
+                new_door = Door(x, y)
+                level[y][x] = '.'
 
-    return new_player, x, y, rival_group
+    return new_player, x, y, rival_group, new_door
 
 
 def move(hero, movement):
@@ -251,25 +276,38 @@ def move(hero, movement):
             hero.turn_right()
 
 
-total_level_width = 20 * 50
-total_level_height = 20 * 50
-
+total_level_width = 50 * 50
+total_level_height = 50 * 50
 
 camera = Camera(camera_func, total_level_width, total_level_height)
 
+
+
+
+
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
+
     hero = None
     ranning = True
     start_screen()
+
+    #level_1(Sprite)
+
+   # level_2(Sprite)
+
     level_map = load_level('map.txt')
-    hero, max_x, max_y, rival_group = generate_level(level_map)
+    n = 10
+
+    hero, max_x, max_y, rival_group, door = generate_level(level_map)
 
     pygame.mouse.set_visible(False)
 
+    #door.add(door_group)
     sprite_group.add(hero)
-   # sprite_group.add(mon)
+# sprite_group.add(mon)
     sprite_group.add(rival_group)
+    sprite_group.add(door)
 
     while ranning:
         for mon in rival_group:
@@ -286,6 +324,20 @@ if __name__ == '__main__':
                     move(hero, 'right')
                 if event.key == pygame.K_a:
                     move(hero, 'left')
+
+        if n == 10:
+            if pygame.sprite.collide_mask(hero, door):
+                sprite_group.empty()
+                rival_group.empty()
+
+                level_map = load_level('map2.txt')
+                hero, max_x, max_y, rival_group, door = generate_level(level_map)
+                sprite_group.add(hero)
+                # sprite_group.add(mon)
+                sprite_group.add(rival_group)
+
+                n = 0
+          #  sprite_group.add(door)
 
         screen.fill(pygame.Color('black'))
         camera.update(hero)
