@@ -28,11 +28,17 @@ bullet_right_group = pygame.sprite.Group()
 bullet_left_group = pygame.sprite.Group()
 bullet_down_group = pygame.sprite.Group()
 bullet_up_group = pygame.sprite.Group()
-knife_group = pygame.sprite.Group()
+
+knife_group_up = pygame.sprite.Group()
+knife_group_down = pygame.sprite.Group()
+knife_group_left = pygame.sprite.Group()
+knife_group_right = pygame.sprite.Group()
 
 door_group = pygame.sprite.Group()
 
 zone_group = pygame.sprite.Group()
+
+invent_group = pygame.sprite.Group()
 
 
 tile_image = {'wall': load_image('wall.png'),
@@ -47,7 +53,12 @@ gun_image_down = load_image('gun_down.png')
 gun_image_left = load_image('gun_left.png')
 gun_image_right = load_image('gun_right.png')
 bullet_image = load_image('bullet.png')
-knife_image = load_image('knife.png')
+
+knife_down_image = load_image('knife_down.png')
+knife_up_image = load_image('knife_up.png')
+knife_left_image = load_image('knife_left.png')
+knife_right_image = load_image('knife_right.png')
+
 
 monster1 = load_image("mons1.png")
 monster2 = load_image("mons2.png")
@@ -55,6 +66,8 @@ monster2 = load_image("mons2.png")
 door = load_image('door (1).png')
 
 viszone = load_image('zone.png')
+
+indik = load_image('po.png')
 
 WHERE = 'down'
 tile_width = tile_height = 50
@@ -65,6 +78,11 @@ up_bullet = None
 down_bullet = None
 right_bullet = None
 left_bullet = None
+
+left_knife = None
+right_knife = None
+up_knife = None
+down_knife = None
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
@@ -273,12 +291,90 @@ class Bullet_down(Sprite):
         return self.pos
 
 
+class Knife_right(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(knife_group_right, all_sprites)
+        self.image = knife_right_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_right(self):
+        pass
+
+    def get_coords(self):
+        return self.pos
+
+
+class Knife_left(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(knife_group_left, all_sprites)
+        self.image = knife_left_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_left(self):
+        pass
+
+    def get_coords(self):
+        return self.pos
+
+
+class Knife_up(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(knife_group_up, all_sprites)
+        self.image = knife_up_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_up(self):
+        pass
+
+    def get_coords(self):
+        return self.pos
+
+
+class Knife_down(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(knife_group_down, all_sprites)
+        self.image = knife_down_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_down(self):
+        pass
+
+    def get_coords(self):
+        return self.pos
+
+
 class Visibility(Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(zone_group, all_sprites)
         self.image = viszone
-        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 50, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
+        self.screen_rect = screen.get_rect()
+        self.f = 0.0025
 
         self.mask = pygame.mask.from_surface(self.image)
 
@@ -286,6 +382,17 @@ class Visibility(Sprite):
         self.pos = (x, y)
         self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
                                                tile_height * self.pos[1] + 5)
+
+    def go(self):
+        x, y = self.pos
+        if self.rect.left == 55:
+            mon.m_right()
+            self.f = -1 * self.f
+
+        if self.rect.right == 400:
+            mon.m_left()
+            self.f = -1 * self.f
+        mon.move(x + self.f, y)
 
 
 def camera_func(camera, target_rect):
@@ -303,6 +410,24 @@ def camera_func(camera, target_rect):
     return pygame.Rect(l, t, w, h)
 
 
+def game_over():
+    intro_text = ["             Вы погибли", "",
+                  "             Нажмите на кнопку мыши,",
+                  "         чтобы возродиться"]
+    fon = pygame.transform.scale(load_image('wound.png'), size)
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('red'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -310,7 +435,7 @@ def terminate():
 
 def start_screen():
     intro_text = ["             Deep Dark Dangen", "",
-                  "             Нажмите на кнопку мыши,",
+                  "             Нажмите на кнопку,",
                   "         чтобы играть"]
     fon = pygame.transform.scale(load_image('fon1.png'), size)
     screen.blit((fon), (0, 0))
@@ -392,14 +517,22 @@ total_level_height = 50 * 50
 
 camera = Camera(camera_func, total_level_width, total_level_height)
 
+Patrons = 4
+
 
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
+
 
     sprite_group.add(bullet_left_group)
     sprite_group.add(bullet_right_group)
     sprite_group.add(bullet_up_group)
     sprite_group.add(bullet_down_group)
+
+    sprite_group.add(knife_group_up)
+    sprite_group.add(knife_group_left)
+    sprite_group.add(knife_group_right)
+    sprite_group.add(knife_group_down)
 
     hero = None
     ranning = True
@@ -421,12 +554,34 @@ if __name__ == '__main__':
     sprite_group.add(door)
    # sprite_group.add(zone_group)
 
+    #invent_group.add(indik)
+
     while ranning:
+      #  invent_group.draw(screen)
+
+        #text_coord = 50
+
+       # string_rendered = (str(Patrons), 1, pygame.Color('black'))
+      #  intro_rect = string_rendered.get_rect()
+      #  text_coord += 10
+      #  intro_rect.top = text_coord
+      #  intro_rect.x = 10
+      #  text_coord += intro_rect.height
+      #  screen.blit(string_rendered, intro_rect)
+
         for mon in rival_group:
+          #  vz = Visibility(mon.get_coords()[0], mon.get_coords()[1])
+           # vz = None
+          #  sprite_group.remove(vz)
+          #  zone_group.add(vz)
+            #vz.kill()
            # zone_group.empty()
             #del sprite_group[sprite_group.index(vz)]
+           # vz.go()
+
             mon.go()
            # zone_group.draw(screen)
+     #   sprite_group.add(zone_group)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 ranning = False
@@ -445,29 +600,64 @@ if __name__ == '__main__':
                     WHERE = 'left'
                 if event.key == pygame.K_SPACE:
                     sound1.play()
-                    if WHERE == 'up':
+                    if WHERE == 'up' and Patrons > 0:
                         up_bullet = Bullet_up(hero.get_coords()[0], hero.get_coords()[1])
                         sprite_group.add(up_bullet)
                         bullet_up_group.add(up_bullet)
                         bullet_up_group.draw(screen)
-                    elif WHERE == 'down':
+                        Patrons -= 1
+                    elif WHERE == 'down' and Patrons > 0:
                         down_bullet = Bullet_down(hero.get_coords()[0], hero.get_coords()[1])
                         sprite_group.add(down_bullet)
                         bullet_down_group.add(down_bullet)
                         bullet_down_group.draw(screen)
-                    elif WHERE == 'left':
+                        Patrons -= 1
+                    elif WHERE == 'left' and Patrons > 0:
                         left_bullet = Bullet_left(hero.get_coords()[0], hero.get_coords()[1])
                         sprite_group.add(left_bullet)
                         bullet_left_group.add(left_bullet)
                         bullet_left_group.draw(screen)
-                    elif WHERE == 'right':
+                        Patrons -= 1
+                    elif WHERE == 'right' and Patrons > 0:
                         right_bullet = Bullet_right(hero.get_coords()[0], hero.get_coords()[1])
                         sprite_group.add(right_bullet)
                         bullet_right_group.add(right_bullet)
                         bullet_right_group.draw(screen)
+                        Patrons -= 1
+                if event.key == pygame.K_f:
+                    if WHERE == 'up':
+                        up_knife = Knife_up(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(up_knife)
+                        knife_group_up.add(up_knife)
+                        knife_group_up.draw(screen)
+                        move(up_knife, 'up')
+                        up_knife.kill()
+                    elif WHERE == 'down':
+                        down_knife = Knife_down(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(down_knife)
+                        knife_group_down.add(down_bullet)
+                        knife_group_down.draw(screen)
+                        move(down_bullet, 'down')
+                        down_knife.kill()
+                    elif WHERE == 'left':
+                        left_knife = Knife_left(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(left_knife)
+                        knife_group_left.add(left_knife)
+                        knife_group_left.draw(screen)
+                        move(left_knife, 'left')
+                        left_knife.kill()
+                    elif WHERE == 'right':
+                        right_knife = Knife_right(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(right_knife)
+                        knife_group_right.add(right_knife)
+                        knife_group_right.draw(screen)
+                        move(right_knife, 'right')
+                        right_knife.kill()
+
 
         if n == 10:
             if pygame.sprite.collide_mask(hero, door):
+                Patrons += 10
                 sprite_group.empty()
                 rival_group.empty()
 
@@ -514,17 +704,28 @@ if __name__ == '__main__':
             if right_bullet is not None and pygame.sprite.collide_rect(monster, right_bullet):
                 monster.kill()
                 right_bullet.kill()
-            if pygame.sprite.collide_rect(monster, hero):
-                terminate()
+            if hero is not None and pygame.sprite.collide_rect(monster, hero):
+                game_over()
+            if left_knife is not None and pygame.sprite.collide_rect(monster, left_knife):
+                monster.kill()
+                left_knife.kill()
+            if up_knife is not None and pygame.sprite.collide_rect(monster, up_knife):
+                monster.kill()
+                up_knife.kill()
+            if right_knife is not None and pygame.sprite.collide_rect(monster, right_knife):
+                monster.kill()
+                right_knife.kill()
+            if down_bullet is not None and pygame.sprite.collide_rect(monster, down_knife):
+                monster.kill()
+                down_knife.kill()
+              #  if n == 10:
+                  #  sprite_group.empty()
+                #    rival_group.empty()
 
-        for mon in rival_group:
-          #  sprite_group.remove(vz)
-            vz = Visibility(mon.get_coords()[0], mon.get_coords()[1])
-            sprite_group.add(vz)
-            zone_group.add(vz)
-          #  vz.kill()
-        #sprite_group.draw(screen)
-        #hero_group.draw(screen)
-      #  rival_group.draw(screen)
+                 #   level_map = load_level('map.txt')
+                  #  hero, max_x, max_y, rival_group, door = generate_level(level_map)
+                  #  sprite_group.add(hero)
+                        # sprite_group.add(mon)
+                   # sprite_group.add(rival_group)
         pygame.display.flip()
     pygame.quit()
