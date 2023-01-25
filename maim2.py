@@ -24,6 +24,11 @@ size = [width, height]
 screen = pygame.display.set_mode(size)
 sprite_group = pygame.sprite.Group()
 hero_group = pygame.sprite.Group()
+bullet_right_group = pygame.sprite.Group()
+bullet_left_group = pygame.sprite.Group()
+bullet_down_group = pygame.sprite.Group()
+bullet_up_group = pygame.sprite.Group()
+knife_group = pygame.sprite.Group()
 
 door_group = pygame.sprite.Group()
 
@@ -39,15 +44,23 @@ gun_image_up = load_image('gun_up.png')
 gun_image_down = load_image('gun_down.png')
 gun_image_left = load_image('gun_left.png')
 gun_image_right = load_image('gun_right.png')
-bullet_image = load_image('mar.png')
+bullet_image = load_image('bullet.png')
+knife_image = load_image('knife.png')
 
 monster1 = load_image("mons1.png")
 monster2 = load_image("mons2.png")
 
 door = load_image('door (1).png')
 
+WHERE = 'down'
 tile_width = tile_height = 50
+pygame.mixer.music.load('sound/war.mp3')
+sound1 = pygame.mixer.Sound('sound/boom.mp3')
 
+up_bullet = None
+down_bullet = None
+right_bullet = None
+left_bullet = None
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
@@ -177,6 +190,82 @@ class Door(Sprite):
                                                tile_height * self.pos[1] + 5)
 
 
+class Bullet_right(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(bullet_right_group, all_sprites)
+        self.image = bullet_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_right(self):
+        self.image = bullet_image
+
+    def get_coords(self):
+        return self.pos
+
+
+class Bullet_left(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(bullet_left_group, all_sprites)
+        self.image = bullet_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_left(self):
+        self.image = bullet_image
+
+    def get_coords(self):
+        return self.pos
+
+
+class Bullet_up(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(bullet_up_group, all_sprites)
+        self.image = bullet_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_up(self):
+        self.image = bullet_image
+
+    def get_coords(self):
+        return self.pos
+
+
+class Bullet_down(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(bullet_down_group, all_sprites)
+        self.image = bullet_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
+
+    def turn_down(self):
+        self.image = bullet_image
+
+    def get_coords(self):
+        return self.pos
+
+
 def camera_func(camera, target_rect):
     l = -target_rect.x + size[0] // 2
     t = -target_rect.y + size[1] // 2
@@ -288,6 +377,11 @@ camera = Camera(camera_func, total_level_width, total_level_height)
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
 
+    sprite_group.add(bullet_left_group)
+    sprite_group.add(bullet_right_group)
+    sprite_group.add(bullet_up_group)
+    sprite_group.add(bullet_down_group)
+
     hero = None
     ranning = True
     start_screen()
@@ -300,6 +394,8 @@ if __name__ == '__main__':
     n = 10
 
     hero, max_x, max_y, rival_group, door = generate_level(level_map)
+
+    pygame.mixer.music.play()
 
     pygame.mouse.set_visible(False)
 
@@ -318,12 +414,38 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     move(hero, 'up')
+                    WHERE = 'up'
                 if event.key == pygame.K_s:
                     move(hero, 'down')
+                    WHERE = 'down'
                 if event.key == pygame.K_d:
                     move(hero, 'right')
+                    WHERE = 'right'
                 if event.key == pygame.K_a:
                     move(hero, 'left')
+                    WHERE = 'left'
+                if event.key == pygame.K_SPACE:
+                    sound1.play()
+                    if WHERE == 'up':
+                        up_bullet = Bullet_up(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(up_bullet)
+                        bullet_up_group.add(up_bullet)
+                        bullet_up_group.draw(screen)
+                    elif WHERE == 'down':
+                        down_bullet = Bullet_down(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(down_bullet)
+                        bullet_down_group.add(down_bullet)
+                        bullet_down_group.draw(screen)
+                    elif WHERE == 'left':
+                        left_bullet = Bullet_left(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(left_bullet)
+                        bullet_left_group.add(left_bullet)
+                        bullet_left_group.draw(screen)
+                    elif WHERE == 'right':
+                        right_bullet = Bullet_right(hero.get_coords()[0], hero.get_coords()[1])
+                        sprite_group.add(right_bullet)
+                        bullet_right_group.add(right_bullet)
+                        bullet_right_group.draw(screen)
 
         if n == 10:
             if pygame.sprite.collide_mask(hero, door):
@@ -343,6 +465,38 @@ if __name__ == '__main__':
         camera.update(hero)
         for sprite in sprite_group:
             screen.blit(sprite.image, camera.apply(sprite))
+
+        if up_bullet is not None:
+            move(up_bullet, 'up')
+            if level_map[up_bullet.get_coords()[1] - 1][up_bullet.get_coords()[0]] == '#':
+                up_bullet.kill()
+        if down_bullet is not None:
+            move(down_bullet, 'down')
+            if level_map[down_bullet.get_coords()[1] + 1][down_bullet.get_coords()[0]] == '#':
+                down_bullet.kill()
+        if left_bullet is not None:
+            move(left_bullet, 'left')
+            if level_map[left_bullet.get_coords()[1]][left_bullet.get_coords()[0] - 1] == '#':
+                left_bullet.kill()
+        if right_bullet is not None:
+            move(right_bullet, 'right')
+            if level_map[right_bullet.get_coords()[1]][right_bullet.get_coords()[0] + 1] == '#':
+                right_bullet.kill()
+        for monster in rival_group:
+            if up_bullet is not None and pygame.sprite.collide_rect(monster, up_bullet):
+                monster.kill()
+                up_bullet.kill()
+            if down_bullet is not None and pygame.sprite.collide_rect(monster, down_bullet):
+                monster.kill()
+                down_bullet.kill()
+            if left_bullet is not None and pygame.sprite.collide_rect(monster, left_bullet):
+                monster.kill()
+                left_bullet.kill()
+            if right_bullet is not None and pygame.sprite.collide_rect(monster, right_bullet):
+                monster.kill()
+                right_bullet.kill()
+            if pygame.sprite.collide_rect(monster, hero):
+                terminate()
         #sprite_group.draw(screen)
         #hero_group.draw(screen)
       #  rival_group.draw(screen)
