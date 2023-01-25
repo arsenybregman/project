@@ -32,6 +32,8 @@ knife_group = pygame.sprite.Group()
 
 door_group = pygame.sprite.Group()
 
+zone_group = pygame.sprite.Group()
+
 
 tile_image = {'wall': load_image('wall.png'),
               'empty': load_image('floor.png')}
@@ -51,6 +53,8 @@ monster1 = load_image("mons1.png")
 monster2 = load_image("mons2.png")
 
 door = load_image('door (1).png')
+
+viszone = load_image('zone.png')
 
 WHERE = 'down'
 tile_width = tile_height = 50
@@ -160,6 +164,9 @@ class Monster(Sprite):
             self.f = -1 * self.f
         mon.move(x + self.f, y)
 
+    def get_coords(self):
+        return self.pos
+
 
 #Камера
 class Camera:
@@ -264,6 +271,21 @@ class Bullet_down(Sprite):
 
     def get_coords(self):
         return self.pos
+
+
+class Visibility(Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(zone_group, all_sprites)
+        self.image = viszone
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
+        self.pos = (pos_x, pos_y)
+
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def move(self, x, y):
+        self.pos = (x, y)
+        self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
+                                               tile_height * self.pos[1] + 5)
 
 
 def camera_func(camera, target_rect):
@@ -371,9 +393,6 @@ total_level_height = 50 * 50
 camera = Camera(camera_func, total_level_width, total_level_height)
 
 
-
-
-
 if __name__ == '__main__':
     pygame.display.set_caption('DDD')
 
@@ -385,10 +404,6 @@ if __name__ == '__main__':
     hero = None
     ranning = True
     start_screen()
-
-    #level_1(Sprite)
-
-   # level_2(Sprite)
 
     level_map = load_level('map.txt')
     n = 10
@@ -404,10 +419,14 @@ if __name__ == '__main__':
 # sprite_group.add(mon)
     sprite_group.add(rival_group)
     sprite_group.add(door)
+   # sprite_group.add(zone_group)
 
     while ranning:
         for mon in rival_group:
+           # zone_group.empty()
+            #del sprite_group[sprite_group.index(vz)]
             mon.go()
+           # zone_group.draw(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 ranning = False
@@ -497,6 +516,13 @@ if __name__ == '__main__':
                 right_bullet.kill()
             if pygame.sprite.collide_rect(monster, hero):
                 terminate()
+
+        for mon in rival_group:
+          #  sprite_group.remove(vz)
+            vz = Visibility(mon.get_coords()[0], mon.get_coords()[1])
+            sprite_group.add(vz)
+            zone_group.add(vz)
+          #  vz.kill()
         #sprite_group.draw(screen)
         #hero_group.draw(screen)
       #  rival_group.draw(screen)
