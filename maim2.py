@@ -367,32 +367,17 @@ class Knife_down(Sprite):
         return self.pos
 
 
-class Visibility(Sprite):
+class Inventar(Sprite):
     def __init__(self, pos_x, pos_y):
-        super().__init__(zone_group, all_sprites)
-        self.image = viszone
-        self.rect = self.image.get_rect().move(tile_width * pos_x + 50, tile_height * pos_y + 5)
+        super().__init__(knife_group_down, all_sprites)
+        self.image = indik
+        self.rect = self.image.get_rect().move(tile_width * pos_x + 15, tile_height * pos_y + 5)
         self.pos = (pos_x, pos_y)
-        self.screen_rect = screen.get_rect()
-        self.f = 0.0025
-
-        self.mask = pygame.mask.from_surface(self.image)
 
     def move(self, x, y):
         self.pos = (x, y)
         self.rect = self.image.get_rect().move(tile_width * self.pos[0] + 15,
                                                tile_height * self.pos[1] + 5)
-
-    def go(self):
-        x, y = self.pos
-        if self.rect.left == 55:
-            mon.m_right()
-            self.f = -1 * self.f
-
-        if self.rect.right == 400:
-            mon.m_left()
-            self.f = -1 * self.f
-        mon.move(x + self.f, y)
 
 
 def camera_func(camera, target_rect):
@@ -538,7 +523,7 @@ if __name__ == '__main__':
     ranning = True
     start_screen()
 
-    level_map = load_level('map.txt')
+    level_map = load_level('map1.txt')
     n = 10
 
     hero, max_x, max_y, rival_group, door = generate_level(level_map)
@@ -554,10 +539,13 @@ if __name__ == '__main__':
     sprite_group.add(door)
    # sprite_group.add(zone_group)
 
-    #invent_group.add(indik)
+    #inv = Inventar(0, 0)
+   # screen.blit(inv)
+
+  #  invent_group.add(inv)
 
     while ranning:
-      #  invent_group.draw(screen)
+        invent_group.draw(screen)
 
         #text_coord = 50
 
@@ -570,18 +558,7 @@ if __name__ == '__main__':
       #  screen.blit(string_rendered, intro_rect)
 
         for mon in rival_group:
-          #  vz = Visibility(mon.get_coords()[0], mon.get_coords()[1])
-           # vz = None
-          #  sprite_group.remove(vz)
-          #  zone_group.add(vz)
-            #vz.kill()
-           # zone_group.empty()
-            #del sprite_group[sprite_group.index(vz)]
-           # vz.go()
-
             mon.go()
-           # zone_group.draw(screen)
-     #   sprite_group.add(zone_group)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 ranning = False
@@ -654,14 +631,13 @@ if __name__ == '__main__':
                         move(right_knife, 'right')
                         right_knife.kill()
 
-
         if n == 10:
             if pygame.sprite.collide_mask(hero, door):
                 Patrons += 10
                 sprite_group.empty()
                 rival_group.empty()
 
-                level_map = load_level('map2.txt')
+                level_map = load_level('map2.1.txt')
                 hero, max_x, max_y, rival_group, door = generate_level(level_map)
                 sprite_group.add(hero)
                 # sprite_group.add(mon)
